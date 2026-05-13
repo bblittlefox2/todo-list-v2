@@ -1,52 +1,130 @@
+<!-- DOCTYPE 告诉浏览器这是一个 HTML5 文件 -->
+<!-- HTML 入门：https://developer.mozilla.org/zh-CN/docs/Learn/HTML -->
 <!DOCTYPE html>
+
+<!-- html 标签是整个网页的根标签，所有内容都在它里面 -->
 <html>
+
+<!-- head 里放页面的元信息，比如标题、样式（页面上看不到） -->
 <head>
+  <!-- title 是浏览器标签栏上显示的文字 -->
   <title>Todo</title>
 </head>
+
+<!-- body 里放页面上能看到的所有东西 -->
 <body>
+  <!-- h1 是一级标题，字最大 -->
   <h1>Todo</h1>
+
+  <!-- input 是一个文本输入框 -->
+  <!-- id="input" 是给它起个名字，方便后面 JS 找到它 -->
+  <!-- 文档：https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/input -->
   <input id="input">
+
+  <!-- button 是一个按钮 -->
+  <!-- onclick 表示被点击时执行 addTodo() 这个函数 -->
   <button onclick="addTodo()">Add</button>
+
+  <!-- ul 是一个无序列表（带小圆点的那种） -->
+  <!-- 里面的内容是空的，会由 JS 动态加进来 -->
   <ul id="list"></ul>
 
+  <!-- script 标签里面写 JavaScript 代码 -->
   <script>
-    // 加载所有 todo 并显示到页面上
+
+    // 这个函数从后端拿到所有 todo，然后显示到页面上
+    // async 表示里面可以用 await（等异步操作完成）
+    // async/await 教程：https://developer.mozilla.org/zh-CN/docs/Learn/JavaScript/Asynchronous/Promises
     async function loadTodos() {
+
+      // 用 fetch 发一个 GET 请求到 /api/todos
+      // await 是「等结果回来再继续」
+      // fetch 文档：https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch
       const response = await fetch('/api/todos');
+
+      // response.json() 把后端返回的 JSON 字符串解析成 JS 数组
+      // 比如 '["买牛奶"]' → ["买牛奶"]
       const todos = await response.json();
+
+      // 找到 id 是 list 的那个 ul 标签
+      // getElementById 文档：https://developer.mozilla.org/zh-CN/docs/Web/API/Document/getElementById
       const list = document.getElementById('list');
+
+      // 先清空列表里原来的内容，不然每次刷新都会重复
       list.innerHTML = '';
+
+      // 循环遍历每一条 todo，挨个加到列表里
+      // i 是这条 todo 在数组里的位置（从 0 开始）
       for (let i = 0; i < todos.length; i++) {
+
+        // 创建一个新的 li 标签（列表里的一行）
+        // createElement 文档：https://developer.mozilla.org/zh-CN/docs/Web/API/Document/createElement
         const li = document.createElement('li');
+
+        // 把这条 todo 的文字放进去，后面留个空格好看一点
         li.textContent = todos[i] + ' ';
+
+        // 再创建一个删除按钮
         const btn = document.createElement('button');
+
+        // 按钮上显示一个 x
         btn.textContent = 'x';
+
+        // 点击这个按钮时，调用 deleteTodo 删掉对应的那条
+        // 把 i 传进去，告诉它要删的是哪一条
         btn.onclick = function () { deleteTodo(i); };
+
+        // 把按钮放进 li 里
         li.appendChild(btn);
+
+        // 把 li 放进 ul 里（页面上就显示出来了）
         list.appendChild(li);
       }
     }
 
-    // 加一个新 todo
+
+    // 这个函数把输入框里的内容发给后端，新增一条 todo
     async function addTodo() {
+
+      // 找到输入框
       const input = document.getElementById('input');
+
+      // 发一个 POST 请求到 /api/todos
+      // method: 'POST' 表示用 POST 方法
+      // headers 告诉后端我发的是 JSON 格式
+      // body 是要发的数据，要先转成 JSON 字符串
+      // JSON.stringify 文档：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
       await fetch('/api/todos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: input.value })
       });
+
+      // 清空输入框，方便接着输入下一条
       input.value = '';
+
+      // 重新加载一次列表，这样新加的 todo 就显示出来了
       loadTodos();
     }
 
-    // 删掉一个 todo
+
+    // 删掉某一条 todo
+    // index 是要删的那条在列表里的位置
     async function deleteTodo(index) {
+
+      // 发一个 DELETE 请求，网址末尾带上 index
+      // 比如删第 0 条就是 /api/todos/0
       await fetch('/api/todos/' + index, { method: 'DELETE' });
+
+      // 删完再刷新一下列表
       loadTodos();
     }
 
-    // 页面打开时先加载一次
+
+    // 页面一打开就调用 loadTodos
+    // 把已经存在的 todo 显示出来
     loadTodos();
+
   </script>
 </body>
 </html>
