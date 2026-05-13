@@ -1,7 +1,5 @@
-# fastapi 是写 Python web 接口的框架
-# 官网：https://fastapi.tiangolo.com/
+# 写后端的框架
 fastapi
 
-# uvicorn 是真正运行 fastapi 应用的服务器
-# 官网：https://www.uvicorn.org/
+# 真正跑服务器的程序
 uvicorn
