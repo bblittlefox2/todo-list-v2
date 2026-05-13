@@ -1,11 +1,52 @@
-<!doctype html>
-<title>Todo</title>
-<input id=t><button onclick=a()>Add</button>
-<ul id=l></ul>
-<script>
-const u='/api/todos'
-const r=async()=>l.innerHTML=(await(await fetch(u)).json()).map((x,i)=>`<li>${x} <button onclick=d(${i})>x</button>`).join('')
-const a=async()=>{await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t.value})});t.value='';r()}
-const d=async i=>{await fetch(u+'/'+i,{method:'DELETE'});r()}
-r()
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Todo</title>
+</head>
+<body>
+  <h1>Todo</h1>
+  <input id="input">
+  <button onclick="addTodo()">Add</button>
+  <ul id="list"></ul>
+
+  <script>
+    // 加载所有 todo 并显示到页面上
+    async function loadTodos() {
+      const response = await fetch('/api/todos');
+      const todos = await response.json();
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      for (let i = 0; i < todos.length; i++) {
+        const li = document.createElement('li');
+        li.textContent = todos[i] + ' ';
+        const btn = document.createElement('button');
+        btn.textContent = 'x';
+        btn.onclick = function () { deleteTodo(i); };
+        li.appendChild(btn);
+        list.appendChild(li);
+      }
+    }
+
+    // 加一个新 todo
+    async function addTodo() {
+      const input = document.getElementById('input');
+      await fetch('/api/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: input.value })
+      });
+      input.value = '';
+      loadTodos();
+    }
+
+    // 删掉一个 todo
+    async function deleteTodo(index) {
+      await fetch('/api/todos/' + index, { method: 'DELETE' });
+      loadTodos();
+    }
+
+    // 页面打开时先加载一次
+    loadTodos();
+  </script>
+</body>
+</html>
